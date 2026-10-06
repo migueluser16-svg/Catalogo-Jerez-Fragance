@@ -9,10 +9,10 @@ st.caption("📍 Tienda Física en Los Alcarrizos, Santo Domingo | 100% Original
 
 st.divider()
 
-# Coloca aquí el enlace .csv publicado de la hoja de Google Sheets
-SHEET_URL = "PEGA_AQUI_TU_LINK_CSV_DE_GOOGLE_SHEETS"
+# Enlace .csv directo de tu Google Sheets
+SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZ_gpjbEJM_KcPR5jDowP3c4N4kFbIq7rF3W4ub9ly7GSQKpe5keGMB-4sKw1Y16Q3oigJe63sp4tQ/pub?gid=0&single=true&output=csv"
 
-@st.cache_data(ttl=60)  # Actualiza la información cada 60 segundos automáticamente
+@st.cache_data(ttl=60)  # Se actualiza solo cada 60 segundos
 def cargar_datos():
     df = pd.read_csv(SHEET_URL)
     return df
@@ -27,7 +27,7 @@ try:
 
     st.write("### 🛍️ Perfumes Disponibles")
 
-    # Filtrar según categoría seleccionada
+    # Filtrar según selección
     if categoria != "Todos":
         df_filtrado = df[df["categoria"] == categoria]
     else:
@@ -56,4 +56,4 @@ try:
         st.divider()
 
 except Exception as e:
-    st.error("Cargando catálogo... Si persiste, verifica que la hoja de cálculo esté publicada en la web como .csv.")
+    st.error("Cargando catálogo... Si persiste, verifica la hoja de cálculo.")
