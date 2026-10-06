@@ -90,7 +90,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Enlace de tu Google Sheets
-SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZ_gpjbEJM_KcPR5jDowP3c4N4kFbIq7rF3W4ub9ly7GSQKpe5keGMB-4sKw1Y16Q3oigJe63sp4tQ/pub?gid=0&single=true&output=csv"
+SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZ_gpjbEJM_KCpRSjDowP3c4N4kFblq7rF3W4ub9ly7QSQKpe5keGMB-4sKw1Y16Q3olgJe63ap4tQ/pub?gid=0&single=true&output=csv"
 
 @st.cache_data(ttl=5)
 def cargar_datos():
