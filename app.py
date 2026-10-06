@@ -1,74 +1,98 @@
 import streamlit as st
 import pandas as pd
 
-# 1. Configuración de pantalla completa y título del navegador
+# Configuración inicial para móvil y escritorio
 st.set_page_config(
-    page_title="Jerez Fragance RD — Catálogo VIP", 
-    page_icon="✨", 
+    page_title="Jerez Fragance RD — Catálogo", 
+    page_icon="🛍️", 
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# 2. Estilos CSS personalizados para estética de lujo
+# Estilos CSS personalizados (Efecto Treinta: Claro, Limpio, Minimalista)
 st.markdown("""
 <style>
-    /* Fondo oscuro estilizado */
+    /* Fondo limpio claro */
     .stApp {
-        background-color: #0e1117;
+        background-color: #f8f9fa;
+        color: #212529;
     }
     
-    /* Encabezado principal */
-    .main-header {
+    /* Header principal */
+    .store-header {
         text-align: center;
-        padding: 10px 0px 20px 0px;
+        padding: 10px 0px 5px 0px;
     }
-    .main-title {
-        font-size: 2.8rem;
-        font-weight: 800;
-        background: linear-gradient(45deg, #f3ec78, #af4261);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 5px;
+    .store-title {
+        font-size: 1.8rem;
+        font-weight: 900;
+        letter-spacing: 1px;
+        color: #111;
+        margin-bottom: 2px;
     }
-    .sub-title {
-        color: #b0b3b8;
-        font-size: 1.1rem;
-        font-style: italic;
+    .store-info {
+        font-size: 0.85rem;
+        color: #28a745;
+        font-weight: 600;
+    }
+    .store-address {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 15px;
     }
     
-    /* Botón de WhatsApp estilizado */
-    div.stButton > button {
-        background-color: #25D366 !important;
-        color: white !important;
-        font-weight: bold !important;
-        border-radius: 25px !important;
-        border: none !important;
-        padding: 10px 20px !important;
-        transition: all 0.3s ease !important;
-        width: 100% !important;
+    /* Estilos de Tarjetas de Productos (Grid 2x2) */
+    .product-card {
+        background-color: #ffffff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 10px;
+        text-align: center;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
-    div.stButton > button:hover {
-        background-color: #128C7E !important;
-        transform: scale(1.02);
+    .product-price {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #212529;
+        margin-top: 5px;
+    }
+    .out-of-stock {
+        color: #dc3545;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+    
+    /* Botón flotante WhatsApp */
+    .floating-wa {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #25d366;
+        color: white;
+        border-radius: 50px;
+        padding: 12px 20px;
+        font-weight: bold;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        z-index: 999;
+        text-decoration: none;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. Banner superior con identidad de marca
+# Encabezado
 st.markdown("""
-    <div class="main-header">
-        <h1 class="main-title">✨ JEREZ FRAGANCE RD ✨</h1>
-        <p class="sub-title">Esencia de elegancia en cada gota 💧</p>
-        <p style="color: #888; font-size: 0.9rem;">📍 Tienda Física en Los Alcarrizos, Santo Domingo | 100% Originales 🇩🇴</p>
+    <div class="store-header">
+        <div class="store-title">🛍️ JEREZ FRAGANCE RD</div>
+        <div class="store-info">🟢 Abierto · 10:00 a. m. - 6:00 p. m.</div>
+        <div class="store-address">📍 Calle 14 #59 Savica, Los Alcarrizos, Santo Domingo</div>
     </div>
 """, unsafe_allow_html=True)
 
-st.divider()
+# Enlace de tu Google Sheets
+SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZ_gpjbEJM_KcPR5jDowP3c4N4kFbIq7rF3W4ub9ly7GSQKpe5keGMB-4sKw1Y16Q3oigJe63sp4tQ/pub?gid=0&single=true&output=csv"
 
-# URL de la hoja de cálculo de Google Sheets publicada como CSV
-SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZ_gpjbEJM_KCpRSjDowP3c4N4kFblq7rF3W4ub9ly7QSQKpe5keGMB-4sKw1Y16Q3olgJe63ap4tQ/pub?gid=0&single=true&output=csv"
-
-@st.cache_data(ttl=10)
+@st.cache_data(ttl=5)
 def cargar_datos():
     df = pd.read_csv(SHEET_URL)
     df.columns = df.columns.str.strip().str.lower()
@@ -77,56 +101,48 @@ def cargar_datos():
 try:
     df = cargar_datos()
 
-    # Barra superior con Buscador y Filtro por categoría
-    col_busqueda, col_filtro = st.columns([2, 1])
-    
-    with col_busqueda:
-        busqueda = st.text_input("🔍 Buscar por perfume o marca:", placeholder="Ej. Club de Nuit, Dior, Armaf...")
-        
-    with col_filtro:
-        categorias = ["Todas"] + [str(c) for c in df["categoria"].dropna().unique()]
-        cat_seleccionada = st.selectbox("🏷️ Categoría:", categorias)
+    # Buscador principal
+    busqueda = st.text_input("", placeholder="🔍 Buscar producto...", label_visibility="collapsed")
 
-    # Filtrar catálogo dinámicamente
+    # Filtros por categorías (Estilo botones)
+    categorias = ["Ver todos"] + [str(c) for c in df["categoria"].dropna().unique()]
+    cat_sel = st.radio("Categorías", categorias, horizontal=True, label_visibility="collapsed")
+
+    # Filtrado dinámico
     df_filtrado = df.copy()
-    
-    if cat_seleccionada != "Todas":
-        df_filtrado = df_filtrado[df_filtrado["categoria"] == cat_seleccionada]
-        
+    if cat_sel != "Ver todos":
+        df_filtrado = df_filtrado[df_filtrado["categoria"] == cat_sel]
     if busqueda:
-        df_filtrado = df_filtrado[
-            df_filtrado["nombre"].astype(str).str.contains(busqueda, case=False, na=False) |
-            df_filtrado["marca"].astype(str).str.contains(busqueda, case=False, na=False)
-        ]
+        df_filtrado = df_filtrado[df_filtrado["nombre"].astype(str).str.contains(busqueda, case=False, na=False)]
 
-    st.markdown(f"Mostrando **{len(df_filtrado)}** perfumes disponibles:")
     st.write("")
 
-    # Generación de tarjetas para cada producto
-    for _, p in df_filtrado.iterrows():
-        with st.container():
-            c1, c2 = st.columns([1, 2], gap="large")
-            
-            with c1:
+    # Generar Grid en 2 columnas (igual que la foto)
+    cols = st.columns(2)
+    for idx, (_, p) in enumerate(df_filtrado.iterrows()):
+        col = cols[idx % 2]
+        with col:
+            with st.container():
                 url_img = str(p["imagen"]).strip() if pd.notna(p["imagen"]) else ""
                 if url_img.startswith("http"):
                     st.image(url_img, use_container_width=True)
                 else:
-                    st.info("📷 Foto no disponible")
-                    
-            with c2:
-                st.markdown(f"## {p['nombre']}")
-                st.markdown(f"**Marca:** `{p['marca']}` | **Categoría:** `{p['categoria']}`")
-                st.write(f"🧪 **Notas Olfativas:** {p['notas']}")
-                st.markdown(f"### 💰 `{p['precio']}`")
+                    st.caption("📷 Foto no disponible")
                 
-                # Mensaje dinámico para WhatsApp
-                msg = f"Hola Jerez Fragance RD! 👋 Me interesa información sobre el perfume '{p['nombre']}' ({p['precio']})."
+                st.markdown(f"**{p['nombre']}**")
+                
+                # Manejar precios o estado "Agotado"
+                precio_str = str(p['precio'])
+                if "agotado" in precio_str.lower():
+                    st.markdown("<p class='out-of-stock'>Producto agotado</p>", unsafe_allow_html=True)
+                else:
+                    st.markdown(f"<p class='product-price'>{precio_str}</p>", unsafe_allow_html=True)
+                
+                # Botón individual de pedido
+                msg = f"Hola Jerez Fragance RD! Me interesa consultar por '{p['nombre']}'"
                 url_wa = f"https://api.whatsapp.com/send?phone=18098807994&text={msg.replace(' ', '%20')}"
-                
-                st.link_button("💬 Pedir por WhatsApp", url_wa)
-                
-            st.divider()
+                st.link_button("💬 Pedir", url_wa, use_container_width=True)
+                st.markdown("---")
 
 except Exception as e:
-    st.error("Cargando catálogo... Si persiste el mensaje, verifica que la hoja de Google Sheets esté pública.")
+    st.error("Cargando catálogo... Asegúrate de publicar la hoja de Google Sheets en la web.")
