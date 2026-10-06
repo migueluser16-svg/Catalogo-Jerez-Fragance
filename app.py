@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 st.set_page_config(page_title="Jerez Fragance RD — Catálogo", page_icon="🧪", layout="centered")
 
@@ -8,47 +9,38 @@ st.caption("📍 Tienda Física en Los Alcarrizos, Santo Domingo | 100% Original
 
 st.divider()
 
-categoria = st.selectbox(
-    "Filtrar por categoría:",
-    ["Todos", "Masculinos", "Femeninos", "Unisex", "Decants / Muestras"]
-)
+# Coloca aquí el enlace .csv publicado de la hoja de Google Sheets
+SHEET_URL = "PEGA_AQUI_TU_LINK_CSV_DE_GOOGLE_SHEETS"
 
-# Lista con enlaces a imágenes reales (puedes usar enlaces de PostImage, Imgur o Unsplash)
-perfumes = [
-    {
-        "nombre": "Club de Nuit Intense Man",
-        "marca": "Armaf",
-        "categoria": "Masculinos",
-        "precio": "RD$ 3,500",
-        "notas": "Cítrico, Amaderado, Cueros",
-        "imagen": "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=500"
-    },
-    {
-        "nombre": "Y EDP",
-        "marca": "Yves Saint Laurent",
-        "categoria": "Masculinos",
-        "precio": "RD$ 7,200",
-        "notas": "Manzana verde, Salvia, Habatonka",
-        "imagen": "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=500"
-    },
-    {
-        "nombre": "Decant / Muestra 10ml - Sauvage Elixir",
-        "marca": "Dior",
-        "categoria": "Decants / Muestras",
-        "precio": "RD$ 950",
-        "notas": "Especiado, Lavanda, Maderas",
-        "imagen": "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?w=500"
-    }
-]
+@st.cache_data(ttl=60)  # Actualiza la información cada 60 segundos automáticamente
+def cargar_datos():
+    df = pd.read_csv(SHEET_URL)
+    return df
 
-st.write("### 🛍️ Perfumes Disponibles")
+try:
+    df = cargar_datos()
 
-for p in perfumes:
-    if categoria == "Todos" or p["categoria"] == categoria:
+    categoria = st.selectbox(
+        "Filtrar por categoría:",
+        ["Todos"] + list(df["categoria"].dropna().unique())
+    )
+
+    st.write("### 🛍️ Perfumes Disponibles")
+
+    # Filtrar según categoría seleccionada
+    if categoria != "Todos":
+        df_filtrado = df[df["categoria"] == categoria]
+    else:
+        df_filtrado = df
+
+    for _, p in df_filtrado.iterrows():
         col1, col2 = st.columns([1, 2])
         
         with col1:
-            st.image(p["imagen"], use_container_width=True)
+            if pd.notna(p["imagen"]) and str(p["imagen"]).startswith("http"):
+                st.image(p["imagen"], use_container_width=True)
+            else:
+                st.info("📷 Foto no disponible")
             
         with col2:
             st.markdown(f"### {p['nombre']}")
@@ -62,3 +54,6 @@ for p in perfumes:
             st.link_button("💬 Pedir por WhatsApp", url_wa)
         
         st.divider()
+
+except Exception as e:
+    st.error("Cargando catálogo... Si persiste, verifica que la hoja de cálculo esté publicada en la web como .csv.")
